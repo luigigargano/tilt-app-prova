@@ -1,0 +1,3 @@
+P&P Solutions - Stima Rapida FV + Accumulo
+versione 2026.10.18-REL del 18/10/2026 - candidata RELEASE 18/10/2026, NON pubblicata
+sorgente: BUILD9C PeP_index_NA_20261018.html sha256/16 32712a99cf94919a

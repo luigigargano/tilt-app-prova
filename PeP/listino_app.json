@@ -1,0 +1,11 @@
+{
+ "schema": "TILT-LISTINO-APP-1",
+ "app": "PeP",
+ "stato": "NON_PUBBLICATO",
+ "fornitore_ammesso": "PEP",
+ "listino_fonte": null,
+ "data_aggiornamento_commerciale": null,
+ "approvato_da": null,
+ "nota": "Nessun prezzo pubblicato. Da generare con tools/genera_listino_app.py da listino VERIFICATO e pubblicare solo su ok Owner (DEC-7).",
+ "voci": []
+}

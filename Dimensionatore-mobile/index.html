@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dimensionatore">
+<meta name="theme-color" content="#2C5F7C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<title>Dimensionatore FV mobile</title>
+<style>
+:root{--blu:#2C5F7C;--blu2:#3f7fa3;--ink:#17222a;--sub:#55636c;--bg:#f3f6f8;--card:#fff;--bordo:#dbe3e8;--warn:#fff4d6;--warnink:#5a4300;--ok:#e7f2ea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e6edf1;--sub:#a3b1ba;--bg:#11181d;--card:#1a242b;--bordo:#2c3a43;--warn:#3a3218;--warnink:#f1dc9c;--ok:#1d3326}}
+:root[data-theme="dark"]{--ink:#e6edf1;--sub:#a3b1ba;--bg:#11181d;--card:#1a242b;--bordo:#2c3a43;--warn:#3a3218;--warnink:#f1dc9c;--ok:#1d3326}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45;-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;padding:12px 16px calc(24px + env(safe-area-inset-bottom))}
+h1{font-size:19px;margin:8px 0 2px}
+.lead{font-size:13px;color:var(--sub);margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--bordo);border-radius:14px;padding:14px;margin:12px 0}
+h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--blu2);margin:0 0 8px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+input,select{width:100%;font-size:16px;padding:11px 12px;border:1.5px solid var(--bordo);border-radius:10px;background:var(--card);color:var(--ink)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tog{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;margin:8px 0}
+.tog input{width:20px;height:20px}
+.hint{font-size:12px;color:var(--sub);margin-top:4px}
+details summary{cursor:pointer;font-weight:600;color:var(--blu2);font-size:14px;padding:6px 0}
+.btn{width:100%;margin-top:14px;padding:14px;border:0;border-radius:12px;background:var(--blu);color:#fff;font-size:16px;font-weight:700}
+.warn{background:var(--warn);color:var(--warnink);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:7px 4px;border-bottom:1px solid var(--bordo);vertical-align:top}
+td.v{text-align:right;font-weight:700;width:42%}
+.c{color:var(--sub);font-size:11px;white-space:nowrap}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi div{background:var(--ok);border-radius:10px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:22px}
+.kpi span{font-size:11px;color:var(--sub);text-transform:uppercase}
+ul{margin:4px 0 0 18px;padding:0;font-size:13px}
+.foot{font-size:11.5px;color:var(--sub);text-align:center;margin:18px 0}
+#upd{display:none;position:sticky;top:0;z-index:9;background:var(--blu);color:#fff;padding:9px 12px;border-radius:0 0 10px 10px;font-size:14px;justify-content:space-between;align-items:center}
+.btn2{width:100%;margin-top:10px;padding:12px;border:1.5px solid var(--blu);border-radius:12px;background:transparent;color:var(--blu2);font-size:15px;font-weight:700}
+.frase{font-size:15px;line-height:1.55;margin:0}
+.ph{display:none}
+@media print{body{background:#fff;color:#000}.wrap{max-width:none;padding:0}#upd,#off,.noprint,.btn,.btn2,details.metodo summary{display:none!important}.card{border:1px solid #999;break-inside:avoid;margin:8px 0}.ph{display:block;font-size:12px;margin-bottom:6px}details.metodo{display:block}details.metodo>*{display:block}.kpi div{background:#eef}}
+#upd button{background:#fff;color:var(--blu);border:0;border-radius:8px;padding:6px 10px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="upd" role="status"><span>Nuova versione disponibile</span><button id="updBtn">Aggiorna</button></div>
+<div class="wrap">
+  <div class="ph" id="printHead"></div>
+  <h1>Dimensionatore FV + Accumulo</h1>
+  <p class="lead">Versione web di prova del Dimensionatore Rapido v7 (metodo del foglio Excel, senza macro). Strumento tecnico: nessun prezzo, non è un'offerta.</p>
+  <div id="off" class="warn" style="display:none" role="status">Sei offline: il calcolo funziona con i dati già scaricati.</div>
+
+  <div class="card noprint">
+    <h2>Dati</h2>
+    <label for="comune">Comune</label>
+    <input id="comune" list="lc" autocomplete="off" placeholder="es. Napoli">
+    <datalist id="lc"></datalist>
+    <div class="hint" id="zinfo"></div>
+    <div class="duo">
+      <div><label for="spesa">Spesa luce (€)</label><input id="spesa" type="number" inputmode="decimal" min="0"></div>
+      <div><label for="tipo">Periodo spesa</label>
+        <select id="tipo"><option>Mensile</option><option selected>Bimestrale</option><option>Annuale</option></select></div>
+    </div>
+    <label for="cons">Consumo annuo reale da bolletta (kWh)</label>
+    <input id="cons" type="number" inputmode="decimal" min="0" placeholder="se noto, ha la priorità">
+    <div class="tog"><input type="checkbox" id="pdc"><label for="pdc" style="margin:0">Pompa di calore</label></div>
+    <div class="tog"><input type="checkbox" id="ev"><label for="ev" style="margin:0">Auto elettrica</label></div>
+    <div class="tog"><input type="checkbox" id="ind"><label for="ind" style="margin:0">Piano a induzione</label></div>
+    <label for="clima">Climatizzatori (numero)</label>
+    <input id="clima" type="number" inputmode="numeric" min="0" max="10" value="0">
+    <details>
+      <summary>Parametri facoltativi (se vuoti si usano ipotesi dichiarate)</summary>
+      <div class="duo">
+        <div><label for="prezzo">Prezzo energia (€/kWh)</label><input id="prezzo" type="number" step="0.01" inputmode="decimal" placeholder="ipotesi 0,36"></div>
+        <div><label for="aumento">Aumento annuo (%)</label><input id="aumento" type="number" step="0.1" inputmode="decimal" placeholder="ipotesi 3"></div>
+      </div>
+      <label>Ripartizione consumi per fascia (%)</label>
+      <div class="trio">
+        <input id="f1" type="number" inputmode="decimal" placeholder="F1 30" aria-label="F1 percentuale">
+        <input id="f2" type="number" inputmode="decimal" placeholder="F2 35" aria-label="F2 percentuale">
+        <input id="f3" type="number" inputmode="decimal" placeholder="F3 35" aria-label="F3 percentuale">
+      </div>
+      <div class="duo">
+        <div><label for="kpdc">kWh/anno pompa di calore</label><input id="kpdc" type="number" inputmode="decimal" placeholder="ipotesi 7800"></div>
+        <div><label for="kev">kWh/anno auto elettrica</label><input id="kev" type="number" inputmode="decimal" placeholder="ipotesi 2000"></div>
+      </div>
+    </details>
+    <button class="btn" id="calc">Calcola</button>
+    <div id="err" class="warn" role="alert" style="display:none"></div>
+  </div>
+
+  <div id="out" style="display:none">
+    <div class="card">
+      <h2>Risultato tecnico</h2>
+      <div class="kpi">
+        <div><b id="kFv">–</b><span>kWp FV</span></div>
+        <div><b id="kAcc">–</b><span>kWh accumulo</span></div>
+        <div><b id="kProd">–</b><span>kWh/anno prodotti</span></div>
+        <div><b id="kCop">–</b><span>copertura con accumulo</span></div>
+      </div>
+      <div class="hint" id="avvisoTaglia"></div>
+      <div id="avvisi"></div>
+    </div>
+    <div class="card">
+      <h2>Sintesi per il cliente</h2>
+      <p class="frase" id="frase"></p>
+      <div class="hint">Frase calcolata come nel file Excel (foglio SINTESI_CLIENTE). Valori previsionali, non un'offerta.</div>
+      <button class="btn2 noprint" id="copia" type="button">Copia la frase</button>
+      <button class="btn2 noprint" id="stampa" type="button">Stampa o salva in PDF</button>
+      <div class="hint noprint" id="copiaEsito" role="status"></div>
+    </div>
+    <div class="card"><h2>Dettaglio</h2><table id="tab"></table></div>
+    <div class="card">
+      <h2>Ipotesi usate</h2><ul id="ipo"></ul>
+      <div class="hint" style="margin-top:8px">Valori classificati: <b>misurato/documentato</b> = da bolletta; <b>ipotizzato</b> = parametro predefinito del metodo, sempre elencato qui; <b>n.d.</b> = non calcolabile.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <details class="metodo">
+      <summary>Metodo di calcolo</summary>
+      <ol style="font-size:13px;margin:6px 0 0 18px;padding:0">
+        <li>Comune: provincia, regione e producibilità PVGIS dall'elenco comuni del file Excel (valore medio della provincia, uguale per tutti i comuni della stessa provincia); se il comune non è in elenco si usa un valore di zona (ipotesi dichiarata).</li>
+        <li>Consumo base: kWh reali da bolletta se presenti, altrimenti spesa annua ÷ prezzo dell'energia.</li>
+        <li>Consumo di dimensionamento: consumo base + carichi futuri indicati (pompa di calore, auto elettrica, induzione, climatizzatori). Nessun margine prudenziale.</li>
+        <li>FV: consumo × 95% ÷ producibilità, arrotondato per eccesso a 0,5 kWp, nel range residenziale 3–10 kWp.</li>
+        <li>Accumulo: taglia 5/10/15/20 kWh scelta sull'autosufficienza obiettivo (77%), sul tetto di 2,5 kWh ogni 1.000 kWh e sul guadagno minimo dell'8% per salire di taglia.</li>
+        <li>Copertura: autoconsumo diretto più energia serale coperta dalla batteria; risparmio = kWh coperti × prezzo dell'energia.</li>
+        <li>Proiezione a 25 anni: serie geometrica con l'aumento annuo indicato (ipotesi 3% se non indicato). Valori previsionali.</li>
+      </ol>
+    </details>
+  </div>
+  <div class="card noprint">
+    <h2>Non incluso</h2>
+    <ul>
+      <li>Prezzo del kit: il foglio PREZZI del file Excel non ha una fonte validata (DEC-7). Nessun prezzo viene mostrato.</li>
+    </ul>
+  </div>
+  <div class="foot">Dati restano sul dispositivo: nessun salvataggio, nessun invio.<br><span id="ver"></span> · candidata RELEASE 18/10/2026, non pubblicata</div>
+</div>
+<script src="dim-core.js"></script>
+<script>
+(function(){
+  'use strict';
+  var $=function(id){return document.getElementById(id);};
+  var COMUNI=[];
+  $('ver').textContent='Versione '+DIM.VERSIONE+' del 18/10/2026';
+  var nf=function(x,d){ return (x==null||!isFinite(x))?'n.d.':Number(x).toLocaleString('it-IT',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}); };
+  var pc=function(x){ return (x==null||!isFinite(x))?'n.d.':Math.round(x*100)+'%'; };
+  var eur=function(x,d){ return (x==null||!isFinite(x))?'n.d.':'€ '+nf(x,d); };
+  var val=function(id){ var v=($(id).value||'').replace(',','.').trim(); return v===''?null:parseFloat(v); };
+  fetch('comuni_dim.json').then(function(r){return r.json();}).then(function(j){
+    COMUNI=j; var dl=$('lc'), fr=document.createDocumentFragment();
+    j.forEach(function(c){ var o=document.createElement('option'); o.value=c[0]; o.label=c[1]; fr.appendChild(o); });
+    dl.appendChild(fr);
+  }).catch(function(){ $('err').textContent='Elenco comuni non disponibile: ricarica con la rete attiva.'; $('err').style.display='block'; });
+  $('comune').addEventListener('change',function(){
+    var c=DIM.trovaComune($('comune').value,COMUNI);
+    $('zinfo').textContent=c?(c[1]+' · '+c[2]+' · producibilità PVGIS (media provinciale) '+nf(c[4])+' kWh/kWp'):'Comune non in elenco: si userà un valore di zona (ipotesi).';
+  });
+  function fail(m){ $('err').textContent=m; $('err').style.display='block'; $('out').style.display='none'; }
+  function calcola(){
+    $('err').style.display='none';
+    var f1=val('f1'),f2=val('f2'),f3=val('f3');
+    var inp={comune:$('comune').value,tipo:$('tipo').value,spesa:val('spesa'),consumoReale:val('cons'),
+      prezzo:val('prezzo'),aumento:val('aumento')==null?null:val('aumento')/100,
+      f1:f1==null?null:f1/100,f2:f2==null?null:f2/100,f3:f3==null?null:f3/100,
+      pdc:$('pdc').checked,ev:$('ev').checked,ind:$('ind').checked,clima:val('clima')||0,
+      kwhPdc:val('kpdc'),kwhEv:val('kev')};
+    if(inp.spesa!=null&&(inp.spesa<0||inp.spesa>100000)) return fail('Spesa fuori intervallo.');
+    if(inp.consumoReale!=null&&(inp.consumoReale<0||inp.consumoReale>200000)) return fail('Consumo fuori intervallo.');
+    if(inp.prezzo!=null&&(inp.prezzo<0.05||inp.prezzo>1.5)) return fail('Prezzo energia fuori intervallo (0,05–1,50 €/kWh).');
+    if(inp.clima<0||inp.clima>10) return fail('Numero climatizzatori fuori intervallo (0–10).');
+    var o=DIM.calcola(inp,COMUNI);
+    $('out').style.display='block';
+    $('kFv').textContent=o.fv==null?'n.d.':nf(o.fv,1);
+    $('kAcc').textContent=o.accumulo==null?'n.d.':nf(o.accumulo);
+    $('kProd').textContent=nf(o.produzione);
+    $('kCop').textContent=pc(o.coperturaCon);
+    $('avvisoTaglia').textContent=o.avvisoTaglia||'';
+    $('avvisi').innerHTML=''; o.avvisi.forEach(function(a){ var d=document.createElement('div'); d.className='warn'; d.textContent=a; $('avvisi').appendChild(d); });
+    var R=[
+      ['Provincia · zona', o.provincia?(o.provincia+' · '+o.zona):'n.d.','C7/C9'],
+      ['Spesa annua', eur(o.spesaAnnua),'C31'],
+      ['Consumo base ('+o.fonteConsumo+')', nf(o.consumoBase)+' kWh','C32'],
+      ['Carichi futuri (PDC+EV+induzione+clima)', nf(o.consumoDim==null?null:o.extraPdc+o.extraEv+o.extraInd+o.extraClima)+' kWh','C34:C37'],
+      ['Consumo di dimensionamento', nf(o.consumoDim)+' kWh','C38'],
+      ['Producibilità ('+(o.fonteResa||'n.d.')+')', nf(o.resa)+' kWh/kWp','C39'],
+      ['FV teorico', nf(o.fvTeorico,2)+' kWp','C40'],
+      ['Accumulo teorico serale', nf(o.accumuloTeorico,2)+' kWh','C50'],
+      ['Autoconsumo diretto', nf(o.autoDiretto)+' kWh','C97'],
+      ['Autoconsumo con accumulo', nf(o.risparmioConKwh)+' kWh','C71'],
+      ['Copertura solo FV · con accumulo', pc(o.coperturaSenza)+' · '+pc(o.coperturaCon),'C72/D72'],
+      ['Bolletta annua · al giorno', eur(o.bollettaAnnua)+' · '+eur(o.bollettaGiorno,2),'C75/C77'],
+      ['Risparmio annuo solo FV · con accumulo', eur(o.risparmioSenzaEur)+' · '+eur(o.risparmioConEur),'C79/C80'],
+      ['Risparmio 25 anni solo FV (previsionale)', eur(o.costo25Senza),'D83'],
+      ['Risparmio 25 anni con accumulo (previsionale)', eur(o.costo25Con),'D84'],
+      ['Bolletta cumulata 25 anni (previsionale)', eur(o.bolletta25),'C85'],
+      ['Prezzo kit', 'non disponibile (DEC-7)','C58']
+    ];
+    var t=$('tab'); t.innerHTML='';
+    R.forEach(function(r){ var tr=document.createElement('tr');
+      var a=document.createElement('td'); a.textContent=r[0]; var sm=document.createElement('span'); sm.className='c'; sm.textContent=' '+r[2]; a.appendChild(sm);
+      var v=document.createElement('td'); v.className='v'; v.textContent=r[1]; tr.appendChild(a); tr.appendChild(v);
+      t.appendChild(tr); });
+    var ul=$('ipo'); ul.innerHTML='';
+    (o.ipotesi.length?o.ipotesi:['nessuna ipotesi sui dati di ingresso']).concat([
+      'parametri fissi del metodo: copertura FV 95%, obiettivo autosufficienza 77%, profondità di scarica 90%, taglie 5/10/15/20 kWh, 300 cicli/anno, efficienza 75%',
+      'producibilità per fascia F1/F2/F3 85/10/5%'
+    ]).forEach(function(x){ var li=document.createElement('li'); li.textContent=x; ul.appendChild(li); });
+    $('frase').textContent=DIM.frase(o);
+    $('copiaEsito').textContent='';
+    $('printHead').textContent='Dimensionatore FV · '+(o.comune||'comune n.d.')+' · '+new Date().toLocaleDateString('it-IT')+' · versione '+DIM.VERSIONE+' · stima tecnica, non è un\'offerta';
+    $('out').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  $('calc').addEventListener('click',function(){ try{ calcola(); }catch(e){ fail('Errore imprevisto nel calcolo: ricarica la pagina.'); } });
+  $('copia').addEventListener('click',function(){
+    var t=$('frase').textContent;
+    var ok=function(){ $('copiaEsito').textContent='Frase copiata.'; }, ko=function(){ $('copiaEsito').textContent='Copia non riuscita: seleziona il testo e copialo a mano.'; };
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(ok,ko); } else ko();
+  });
+  $('stampa').addEventListener('click',function(){ try{ window.print(); }catch(e){ $('copiaEsito').textContent='Stampa non disponibile su questo dispositivo.'; } });
+  var metodo=document.querySelector('details.metodo'), metodoAperto=false;
+  window.addEventListener('beforeprint',function(){ metodoAperto=metodo.open; metodo.open=true; });
+  window.addEventListener('afterprint',function(){ metodo.open=metodoAperto; });
+  function rete(){ $('off').style.display=navigator.onLine?'none':'block'; }
+  window.addEventListener('online',rete); window.addEventListener('offline',rete); rete();
+  if('serviceWorker' in navigator && location.protocol!=='file:'){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      function m(w){ $('upd').style.display='flex'; $('updBtn').onclick=function(){ window.__agg=true; w.postMessage('AGGIORNA'); }; }
+      if(reg.waiting&&navigator.serviceWorker.controller) m(reg.waiting);
+      reg.addEventListener('updatefound',function(){ var w=reg.installing; w&&w.addEventListener('statechange',function(){ if(w.state==='installed'&&navigator.serviceWorker.controller) m(w); }); });
+    }).catch(function(){});
+    var rl=false; navigator.serviceWorker.addEventListener('controllerchange',function(){ if(!rl && window.__agg){ rl=true; location.reload(); } });
+  }
+})();
+</script>
+</body>
+</html>
