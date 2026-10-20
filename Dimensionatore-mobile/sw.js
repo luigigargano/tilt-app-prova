@@ -1,8 +1,8 @@
-/* Service worker - Dimensionatore mobile - versione 2026.10.18-REL
+/* Service worker - Dimensionatore mobile - versione 2026.10.20-PDF1 (aggiunto vendor/jspdf per PDF su iPhone)
    Strategia: navigazione network-first (sempre l'ultima versione quando c'e' rete, copia in cache se offline);
    file statici cache-first con versione nel nome della cache. Nessun dato utente in cache. */
-const CACHE = 'stima-fv-dim-2026.10.18-REL';
-const STATICI = ["./", "index.html", "dim-core.js", "comuni_dim.json", "manifest.webmanifest", "icons/apple-touch-icon-180.png", "icons/icon-192.png", "icons/icon-512.png"];
+const CACHE = 'stima-fv-dim-2026.10.20-PDF1';
+const STATICI = ["./", "index.html", "dim-core.js", "comuni_dim.json", "vendor/jspdf.umd.min.js", "manifest.webmanifest", "icons/apple-touch-icon-180.png", "icons/icon-192.png", "icons/icon-512.png"];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATICI)));
 });

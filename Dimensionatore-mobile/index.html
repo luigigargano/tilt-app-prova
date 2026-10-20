@@ -116,7 +116,7 @@ ul{margin:4px 0 0 18px;padding:0;font-size:13px}
       <p class="frase" id="frase"></p>
       <div class="hint">Frase calcolata come nel file Excel (foglio SINTESI_CLIENTE). Valori previsionali, non un'offerta.</div>
       <button class="btn2 noprint" id="copia" type="button">Copia la frase</button>
-      <button class="btn2 noprint" id="stampa" type="button">Stampa o salva in PDF</button>
+      <button class="btn2 noprint" id="stampa" type="button">Genera PDF (salva o condividi)</button>
       <div class="hint noprint" id="copiaEsito" role="status"></div>
     </div>
     <div class="card"><h2>Dettaglio</h2><table id="tab"></table></div>
@@ -149,12 +149,13 @@ ul{margin:4px 0 0 18px;padding:0;font-size:13px}
   <div class="foot">Dati restano sul dispositivo: nessun salvataggio, nessun invio.<br><span id="ver"></span> · candidata RELEASE 18/10/2026, non pubblicata</div>
 </div>
 <script src="dim-core.js"></script>
+<script src="vendor/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk"></script>
 <script>
 (function(){
   'use strict';
   var $=function(id){return document.getElementById(id);};
   var COMUNI=[];
-  $('ver').textContent='Versione '+DIM.VERSIONE+' del 18/10/2026';
+  $('ver').textContent='Versione '+DIM.VERSIONE+' del 18/10/2026 · build PDF 2026.10.20-PDF1';
   var nf=function(x,d){ return (x==null||!isFinite(x))?'n.d.':Number(x).toLocaleString('it-IT',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}); };
   var pc=function(x){ return (x==null||!isFinite(x))?'n.d.':Math.round(x*100)+'%'; };
   var eur=function(x,d){ return (x==null||!isFinite(x))?'n.d.':'€ '+nf(x,d); };
@@ -229,7 +230,60 @@ ul{margin:4px 0 0 18px;padding:0;font-size:13px}
     var ok=function(){ $('copiaEsito').textContent='Frase copiata.'; }, ko=function(){ $('copiaEsito').textContent='Copia non riuscita: seleziona il testo e copialo a mano.'; };
     if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(ok,ko); } else ko();
   });
-  $('stampa').addEventListener('click',function(){ try{ window.print(); }catch(e){ $('copiaEsito').textContent='Stampa non disponibile su questo dispositivo.'; } });
+  /* PDF 20/10/2026: su iPhone (Safari e app installata) window.print() non apre nulla in modalita' standalone.
+     Il PDF viene ora generato sul dispositivo con jsPDF (testo, nessun dato inviato) e poi condiviso/salvato.
+     window.print() resta solo come ripiego se la libreria non e' disponibile. */
+  var APP_BUILD='2026.10.20-PDF1';
+  function w1252(s){ return String(s==null?'':s).replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/≈/g,'circa ').replace(/≥/g,'>=').replace(/≤/g,'<=').replace(/[→➔]/g,'->').replace(/×/g,'x').replace(/÷/g,':').replace(/[^\x00-\xFF€–—…•·]/g,'?'); }
+  function costruisciPDF(){
+    var J=window.jspdf.jsPDF, pdf=new J({unit:'mm',format:'a4'});
+    var M=14, W=210-2*M, y=M, H=297;
+    function nuovaPag(n){ if(y+n>H-M){ pdf.addPage(); y=M; } }
+    function testo(s,size,bold,col){ pdf.setFont('helvetica',bold?'bold':'normal'); pdf.setFontSize(size); pdf.setTextColor.apply(pdf,col||[23,34,42]);
+      var righe=pdf.splitTextToSize(w1252(s),W), lh=size*0.42; righe.forEach(function(r){ nuovaPag(lh); pdf.text(r,M,y+lh*0.8); y+=lh; }); }
+    function titolo(s){ y+=3; nuovaPag(10); testo(s.toUpperCase(),10,true,[44,95,124]); pdf.setDrawColor(219,227,232); pdf.line(M,y+0.5,M+W,y+0.5); y+=2.5; }
+    testo('Dimensionatore FV + Accumulo',16,true,[44,95,124]);
+    testo($('printHead').textContent,9,false,[85,99,108]); y+=1;
+    titolo('Risultato tecnico');
+    [['FV',$('kFv').textContent+' kWp'],['Accumulo',$('kAcc').textContent+' kWh'],['Produzione',$('kProd').textContent+' kWh/anno'],['Copertura con accumulo',$('kCop').textContent]].forEach(function(k){ testo(k[0]+': '+k[1],11,true); });
+    if($('avvisoTaglia').textContent) testo($('avvisoTaglia').textContent,9);
+    Array.prototype.forEach.call($('avvisi').children,function(d){ testo('Attenzione: '+d.textContent,9,false,[90,67,0]); });
+    titolo('Sintesi per il cliente');
+    testo($('frase').textContent,11);
+    testo('Valori previsionali calcolati con il metodo del foglio Excel: non è un\'offerta.',8.5,false,[85,99,108]);
+    titolo('Dettaglio');
+    Array.prototype.forEach.call($('tab').rows,function(tr){
+      var a=tr.cells[0].firstChild?tr.cells[0].firstChild.textContent:tr.cells[0].textContent, v=tr.cells[1].textContent;
+      pdf.setFontSize(9.5); var la=pdf.splitTextToSize(w1252(a),W*0.62), lv=pdf.splitTextToSize(w1252(v),W*0.36), n=Math.max(la.length,lv.length), lh=4.1;
+      nuovaPag(n*lh+1); pdf.setFont('helvetica','normal'); pdf.setTextColor(23,34,42); pdf.text(la,M,y+lh*0.8);
+      pdf.setFont('helvetica','bold'); pdf.text(lv,M+W,y+lh*0.8,{align:'right'}); y+=n*lh+0.8;
+      pdf.setDrawColor(235,240,243); pdf.line(M,y,M+W,y); y+=0.8; });
+    titolo('Ipotesi usate');
+    Array.prototype.forEach.call($('ipo').children,function(li){ testo('- '+li.textContent,9); });
+    titolo('Metodo di calcolo');
+    Array.prototype.forEach.call(document.querySelectorAll('details.metodo li'),function(li,i){ testo((i+1)+'. '+li.textContent,8.5); });
+    y+=1.5; testo('Strumento tecnico: nessun prezzo, non è un\'offerta. Dati elaborati solo sul dispositivo. Build '+APP_BUILD+' - motore '+DIM.VERSIONE+'.',7.5,false,[85,99,108]);
+    var tot=pdf.getNumberOfPages(); for(var i=1;i<=tot;i++){ pdf.setPage(i); pdf.setFont('helvetica','normal'); pdf.setFontSize(8); pdf.setTextColor(120); pdf.text('Pagina '+i+' di '+tot,210-M,H-8,{align:'right'}); }
+    return pdf;
+  }
+  function nomeFile(){ var c=(($('comune').value||'Stima').normalize?($('comune').value||'Stima').normalize('NFD').replace(/[̀-ͯ]/g,''):($('comune').value||'Stima')).replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'')||'Stima';
+    var d=new Date(), z=function(n){return (n<10?'0':'')+n;}; return 'Dimensionatore-FV-'+c+'-'+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'.pdf'; }
+  $('stampa').addEventListener('click',function(){
+    var esito=$('copiaEsito');
+    if(!(window.jspdf&&window.jspdf.jsPDF)){ try{ window.print(); }catch(e){ esito.textContent='PDF non disponibile: ricarica la pagina con la rete attiva.'; } return; }
+    var pdf, fname=nomeFile();
+    try{ pdf=costruisciPDF(); }catch(e){ esito.textContent='Errore nella preparazione del PDF: ricarica la pagina.'; return; }
+    var blob=pdf.output('blob'), file=null;
+    try{ file=new File([blob],fname,{type:'application/pdf'}); }catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'Dimensionatore FV'}).then(function(){ esito.textContent='PDF pronto: '+fname; },
+        function(e){ if(e&&e.name==='AbortError'){ esito.textContent='Condivisione annullata.'; } else { pdf.save(fname); esito.textContent='PDF scaricato: '+fname; } });
+      return;
+    }
+    var standalone=(window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+    if(standalone){ var u=URL.createObjectURL(blob); location.href=u; return; }
+    pdf.save(fname); esito.textContent='PDF scaricato: '+fname;
+  });
   var metodo=document.querySelector('details.metodo'), metodoAperto=false;
   window.addEventListener('beforeprint',function(){ metodoAperto=metodo.open; metodo.open=true; });
   window.addEventListener('afterprint',function(){ metodo.open=metodoAperto; });
