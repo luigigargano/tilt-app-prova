@@ -280,6 +280,10 @@ summary:before{content:"⚙ ";}
       <div class="cta-title">Il prossimo passo</div>
       <div class="cta-sub">Porta una bolletta: una consulenza gratuita trasforma questa stima in un piano preciso. Nessun impegno.</div>
       <button class="btn wa" id="wa">Prenota la consulenza gratuita</button>
+      <div id="waScelta" style="display:none;margin:-2px 0 10px">
+        <button class="btn wa" id="waConsulente" type="button"></button>
+        <button class="btn ghost" id="waAltro" type="button">Scegli un altro contatto WhatsApp</button>
+      </div>
       <button class="btn ghost" id="onep">📄 Scarica o invia il PDF</button>
       <button class="btn ghost" id="share">Condividi questo risultato</button>
     </div>
@@ -593,10 +597,14 @@ function mostra(r){
   $('opR2b').textContent='≈ '+eur(r.perdi25);
 
   // --- Prenota consulenza: WhatsApp con il riepilogo tecnico (i dati cliente li hai gia') ---
-  $('wa').onclick=()=>{
-    const t=`Buongiorno ${C.AZIENDA}. Ho visto la stima per ${r.selComune[0]}: ${num(r.fv,1).replace(',0','')} kWp + ${num(r.acc)} kWh, risparmio stimato ${eur(r.rispEurCon)}/anno. Vorrei prenotare la consulenza gratuita.`;
-    window.open(`https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(t)}`,'_blank');
-  };
+  // 20/10/2026 (richiesta Owner): il pulsante mostra due scelte - consulente configurato oppure un altro contatto
+  // (wa.me senza numero: WhatsApp apre la rubrica e si sceglie il destinatario). Messaggio invariato.
+  const waTesto=`Buongiorno ${C.AZIENDA}. Ho visto la stima per ${r.selComune[0]}: ${num(r.fv,1).replace(',0','')} kWp + ${num(r.acc)} kWh, risparmio stimato ${eur(r.rispEurCon)}/anno. Vorrei prenotare la consulenza gratuita.`;
+  $('waConsulente').textContent='Scrivi a '+(BRAND.referente||C.AZIENDA)+(BRAND.tel?' ('+BRAND.tel+')':'');
+  $('waScelta').style.display='none';
+  $('wa').onclick=()=>{ const s=$('waScelta'); s.style.display=(s.style.display==='none'?'block':'none'); };
+  $('waConsulente').onclick=()=>{ window.open(`https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(waTesto)}`,'_blank'); };
+  $('waAltro').onclick=()=>{ window.open(`https://wa.me/?text=${encodeURIComponent(waTesto)}`,'_blank'); };
   $('onep').onclick=()=>generaPDF(r);
   $('share').onclick=async()=>{
     const t=`${C.AZIENDA} — ${r.selComune[0]}\nImpianto ${num(r.fv,1).replace(',0','')} kWp + ${num(r.acc)} kWh\nRisparmio ~${eur(r.rispEurCon)}/anno · perdi ${eur(r.perdiGiorno,2)}/giorno restando fermo.`;

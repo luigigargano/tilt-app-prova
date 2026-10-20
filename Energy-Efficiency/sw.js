@@ -1,7 +1,7 @@
 /* Service worker - Energy Efficiency - versione 2026.10.18-REL
    Strategia: navigazione network-first (sempre l'ultima versione quando c'e' rete, copia in cache se offline);
    file statici cache-first con versione nel nome della cache. Nessun dato utente in cache. */
-const CACHE = 'stima-fv-energy-efficiency-2026.10.18-REL-PROVA2';
+const CACHE = 'stima-fv-energy-efficiency-2026.10.20-WA2';
 const STATICI = ["./", "index.html", "manifest.webmanifest", "vendor/html2canvas.min.js", "vendor/jspdf.umd.min.js", "icons/apple-touch-icon-180.png", "icons/icon-192.png", "icons/icon-512.png", "listino_app.json", "logo.jpg"];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATICI)));
